@@ -1,5 +1,5 @@
 <template>
-  <div class="h-screen relative overflow-hidden">
+  <div v-if="city" class="h-screen relative overflow-hidden">
     {{ config.HELLO }}
     <img :src="background" />
     <div class="absolute w-full h-full top-0 overlay"></div>
@@ -7,7 +7,7 @@
       <div class="flex justify-between">
         <div>
           <h1 class="text-7xl text-white">{{ city.name }}</h1>
-          <p class="font-extralight text-2xl mt-2 text-white">Sunday Dec 9th</p>
+          <p class="font-extralight text-2xl mt-2 text-white">{{ today }}</p>
           <!-- <img
             :src="`https://api.openwealthermap.org/img/wn/${city.wealther[0].icon}@4x.png`"
             class="w-56 icon"
@@ -32,6 +32,13 @@
         </button>
       </div>
     </div>
+  </div>
+
+  <div v-else class="p-10">
+    <h1 class="text-7xl">Oops, we can't find that city</h1>
+    <button class="mt-5 bg-sky-400 px-10 w-50 text-white h-10" @click="goBack">
+      Go Back
+    </button>
   </div>
 </template>
 
@@ -94,12 +101,24 @@ const {
   }
 );
 
+let today = new Date();
+today = today.toLocaleDateString("en-US", {
+  weekday: "long",
+  year: "numeric",
+  month: "long",
+  day: "numeric",
+});
+
 const handleClick = () => {
   const formatedSearch = input.value.trim().split(" ").join("+");
   console.log(formatedSearch);
   search.value = formatedSearch;
   input.value = "";
   // await refresh();
+};
+
+const goBack = () => {
+  search.value = cookie.value;
 };
 </script>
 
