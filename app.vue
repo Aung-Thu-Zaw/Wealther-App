@@ -1,5 +1,6 @@
 <template>
   <div class="h-screen relative overflow-hidden">
+    {{ config.HELLO }}
     <img :src="background" />
     <div class="absolute w-full h-full top-0 overlay"></div>
     <div class="absolute w-full h-full top-0 p-48">
@@ -35,10 +36,15 @@
 </template>
 
 <script setup lang="ts">
-const search = ref("New York");
-const input = ref("");
+const cookie = useCookie("city");
+const config = useRuntimeConfig();
+if (!cookie.value) cookie.value = "Myeik";
 
+const search = ref(cookie.value);
+const input = ref("");
 const background = ref("");
+const err = ref(null);
+
 // const { data: city, error } = useFetch(
 //   () =>
 //     `https://api.openweathermap.org/data/2.5/weather?q=${search.value}&units=metric&appid=c42bedf884281d7d4e348f97fb1edbdf`
@@ -51,25 +57,36 @@ const {
 } = useAsyncData(
   "city",
   async () => {
-    const response = await $fetch(
-      `https://api.openweathermap.org/data/2.5/weather?q=${search.value}&units=metric&appid=c42bedf884281d7d4e348f97fb1edbdf`
-    );
+    let response;
 
-    const temp = response.main.temp;
+    try {
+      response = await $fetch(
+        `https://api.openweathermap.org/data/2.5/weather?q=${search.value}`,
+        {
+          params: {
+            units: "metric",
+            appid: config.WEALTHER_APP_SECRET,
+          },
+        }
+      );
 
-    if (temp <= -10) {
-      background.value =
-        "https://images.unsplash.com/photo-1483664852095-d6cc6870702d?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=3540&q=80";
-    } else if (temp > -10 && temp <= 0) {
-      background.value =
-        "https://images.unsplash.com/photo-1476820865390-c52aeebb9891?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=3540&q=80";
-    } else if (temp > 0 && temp <= 10) {
-      background.value =
-        "https://images.unsplash.com/photo-1560258018-c7db7645254e?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=4032&q=80";
-    } else {
-      background.value =
-        "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=3546&q=80";
-    }
+      cookie.value = search.value;
+
+      const temp = response.main.temp;
+      if (temp <= -10) {
+        background.value =
+          "https://images.unsplash.com/photo-1483664852095-d6cc6870702d?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=3540&q=80";
+      } else if (temp > -10 && temp <= 0) {
+        background.value =
+          "https://images.unsplash.com/photo-1476820865390-c52aeebb9891?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=3540&q=80";
+      } else if (temp > 0 && temp <= 10) {
+        background.value =
+          "https://images.unsplash.com/photo-1560258018-c7db7645254e?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=4032&q=80";
+      } else {
+        background.value =
+          "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=3546&q=80";
+      }
+    } catch (e) {}
     return response;
   },
   {
